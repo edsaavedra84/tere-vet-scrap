@@ -1,3 +1,5 @@
 venv
 screenshot*
 __pycache__
+*.log
+set_env_pass.py

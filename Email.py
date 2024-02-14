@@ -10,15 +10,15 @@ import keyring
 def sendMail(imagePath):
 
     gmail_user = keyring.get_password("ring", "gmail_user")
-    gmail_password = keyring.get_password("ring", "gmail_user")
+    gmail_password = keyring.get_password("ring", "gmail_password")
 
     try:
-        body = "New appointments! Check website! <br>"
+        body = "VET - New appointments! Check website! <br>"
         # Define the source and target email address.
         strFrom = gmail_user
-        #strTo = ["saavedra.edo@gmail.com", "Cemunozb@gmail.com", "Cemunozb@gmail.com", "teresitaarayaa@gmail.com"],
-        strTo = []
-        strTo.append(gmail_user)
+        strTo = ["saavedra.edo@gmail.com", "Cemunozb@gmail.com", "teresitaarayaa@gmail.com"]
+        #strTo = []
+        #strTo.append(gmail_user)
         # Create an instance of MIMEMultipart object, pass 'related' as the constructor parameter.
         msgRoot = MIMEMultipart('related')
         # Set the email subject.
