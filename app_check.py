@@ -14,6 +14,8 @@ import os
 file_path = os.path.dirname(os.path.realpath(__file__))
 logging.basicConfig(filename=file_path+'/bot.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
+MINUTES_BETWEEN_RETRY = 15
+
 def pinchaLaX(driver, step):
     try:
         WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, 'rwCommands')))
@@ -79,7 +81,7 @@ def job():
 
     tablesSizes = [len(miss.find_elements(By.CSS_SELECTOR, 'tr')), len(vegas.find_elements(By.CSS_SELECTOR, 'tr'))]
     tablesNames = ["C003_dlv_rblExamDate_0", "C003_dlv_rblExamDate_1"]
-    wawa = True # just for testing purposes
+    wawa = False # just for testing purposes
 
     for index in range(len(tablesSizes)):
         # has to be by index and not by element
@@ -122,7 +124,7 @@ def job():
     # Close the browser
     driver.quit()   
 
-    schedule.every(1).minutes.do(job)
+    schedule.every(MINUTES_BETWEEN_RETRY).minutes.do(job)
 
     return schedule.CancelJob
 
