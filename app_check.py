@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 from selenium.webdriver.chrome.options import Options 
 import time
+import Email
 
 def pinchaLaX(driver, step):
     try:
@@ -70,6 +71,7 @@ vegas = driver.find_element(By.ID, "C003_dlv_rblExamDate_1")
 
 tablesSizes = [len(miss.find_elements(By.CSS_SELECTOR, 'tr')), len(vegas.find_elements(By.CSS_SELECTOR, 'tr'))]
 tablesNames = ["C003_dlv_rblExamDate_0", "C003_dlv_rblExamDate_1"]
+wawa = False # just for testing purposes
 
 for index in range(len(tablesSizes)):
     # has to be by index and not by element
@@ -88,7 +90,8 @@ for index in range(len(tablesSizes)):
 
         if date_obj.month >=7 : #if in range
             row.click()
-            pinchaLaX(driver, 3+(index*indexRow))
+            step = 3+(index*indexRow)
+            pinchaLaX(driver, step)
             time.sleep(1)
             WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'grdSectionInfo')))
             results_table = driver.find_element(By.ID, "grdSectionInfo")
@@ -99,8 +102,13 @@ for index in range(len(tablesSizes)):
                 if count == 2:
                     cells_Table = row_Table.find_elements(By.TAG_NAME, 'td')[1]
                     print(cells_Table.text)
+                    if wawa == True:
+                        Email.sendMail("screenshot"+str(step)+".png")
+                        wawa = False
+
                     if int(cells_Table.text) > 0:
                         print(date_text + "-> avisa ctm ->" + cells_Table.text)
+                        Email.sendMail("screenshot"+str(step)+".png")
 
 # Close the browser
 driver.quit()
