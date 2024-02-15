@@ -27,6 +27,7 @@ def pinchaLaX(driver, step):
         driver.get_screenshot_as_file("screenshot-err.png") #meh for now just take the last found success... :P
 
 def job():
+    logging.warning("------------------------------")
     logging.warning("Starting job")
     options = webdriver.ChromeOptions()
 
@@ -38,7 +39,7 @@ def job():
     # this parameter tells Chrome that 
     # it should be run without UI (Headless) 
     options.add_argument("--start-maximized")
-    #options.add_argument('--headless')
+    #options.add_argument('--headless') # la wea no funciona, sitio ctm!
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
@@ -81,10 +82,12 @@ def job():
 
     tablesSizes = [len(miss.find_elements(By.CSS_SELECTOR, 'tr')), len(vegas.find_elements(By.CSS_SELECTOR, 'tr'))]
     tablesNames = ["C003_dlv_rblExamDate_0", "C003_dlv_rblExamDate_1"]
-    wawa = False # just for testing purposes
+    foundSomething = False
 
     for index in range(len(tablesSizes)):
         # has to be by index and not by element
+        logging.warning("Checking table: %s", tablesNames[index])
+
         for indexRow in range(0, tablesSizes[index]):
             time.sleep(1)
             WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'C003_dlv_rblExamDate_0')))
@@ -112,17 +115,28 @@ def job():
                     if count == 2:
                         cells_Table = row_Table.find_elements(By.TAG_NAME, 'td')[1]
                         print(cells_Table.text)
-                        if wawa == True:
-                            Email.sendMail("screenshot"+str(step)+".png")
-                            wawa = False
 
-                        if int(cells_Table.text) > 0:
+                        try:
+                            if int(cells_Table.text) > 0:
+                                foundSomething = True
+                                print(date_text + "-> avisa ctm ->" + cells_Table.text)
+                                logging.warning("%s -> avisa ctm -> %s", date_text, cells_Table.text)
+                                Email.sendMail("screenshot"+str(step)+".png")
+                        except:
+                            #maybe is not an int?
+                            foundSomething = True
+                            logging.warning("Something strange happened, value: %s, check and send email", cells_Table.text)
                             print(date_text + "-> avisa ctm ->" + cells_Table.text)
-                            logging.warning(date_text + "-> avisa ctm ->" + cells_Table.text)
-                            Email.sendMail("screenshot"+str(step)+".png")
+                            logging.warning("%s -> avisa ctm -> %s", date_text, cells_Table.text)
+                            Email.sendMail("screenshot"+str(step)+".png")                            
 
     # Close the browser
     driver.quit()   
+
+    if foundSomething == True:
+        logging.warning("something was found!")
+    else:
+        logging.warning("Nothing found :(")
 
     schedule.every(MINUTES_BETWEEN_RETRY).minutes.do(job)
 
