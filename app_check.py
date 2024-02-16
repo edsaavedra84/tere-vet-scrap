@@ -25,9 +25,9 @@ def pinchaLaX(driver, step, ss_folder):
         lax = driver.find_element(By.CLASS_NAME, "rwCommands")
         lax.click()  
         time.sleep(1)  
-        driver.get_screenshot_as_file(ss_folder+"/screenshot"+str(step)+".png")
+        driver.get_screenshot_as_file(file_path+"/"+ss_folder+"/screenshot"+str(step)+".png")
     except:
-        driver.get_screenshot_as_file(ss_folder+"/screenshot-err.png") #meh for now just take the last found success... :P
+        driver.get_screenshot_as_file(file_path+"/"+ss_folder+"/screenshot-err.png") #meh for now just take the last found success... :P
 
 def get_options():
     options = webdriver.ChromeOptions()
@@ -76,31 +76,37 @@ def job():
 
     # create folder to store screenshots
     try:
-        os.makedirs(formatted_datetime)
+        os.makedirs(file_path+"/"+formatted_datetime)
     except FileExistsError:
         # directory already exists
         pass
 
     # Navigate to the webpage
-    driver.get("https://ebusiness.avma.org/ECFVG/AVMACPEStatusReview.aspx")
+    try:
+        driver.get("https://ebusiness.avma.org/ECFVG/AVMACPEStatusReview.aspx")
 
-    # Perform actions on the webpage (e.g., filling out a form)
-    elementUser = driver.find_element(By.ID, "txtUserID")
-    elementUser.send_keys("teresitaarayaa@gmail.com")
-    elementPass = driver.find_element(By.ID, "txtPassword")
-    elementPass.send_keys("yohasakura12")
-    element = driver.find_element(By.ID, "ctl12_cmdLogin")
-    time.sleep(1)
+        # Perform actions on the webpage (e.g., filling out a form)
+        elementUser = driver.find_element(By.ID, "txtUserID")
+        elementUser.send_keys("teresitaarayaa@gmail.com")
+        elementPass = driver.find_element(By.ID, "txtPassword")
+        elementPass.send_keys("yohasakura12")
+        element = driver.find_element(By.ID, "ctl12_cmdLogin")
+        time.sleep(1)
 
-    # Simulate submitting the form
-    element.click()
-    pinchaLaX(driver, 1, formatted_datetime)
+        # Simulate submitting the form
+        element.click()
+        pinchaLaX(driver, 1, formatted_datetime)
+    except Exception as e:
+        logging.warning("Fail to get initial page, retry in 30 secs, could be comm loss or something, %s", e)
+        schedule.every(30).seconds.do(job)
+
+        return schedule.CancelJob
 
     try:
         WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'ctl13_tblMain')))
         driver.get("https://ebusiness.avma.org/ECFVG/AVMACPEStatusReview.aspx")
     except:
-        print("regular way...")
+        logging.warning("regular way...")
 
     time.sleep(1)
     WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'ctl13_btnSelectSchedule')))
@@ -140,7 +146,7 @@ def job():
                 time.sleep(1)
                 WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'grdSectionInfo')))
                 results_table = driver.find_element(By.ID, "grdSectionInfo")
-                # Email.sendMail(formatted_datetime+"/screenshot"+str(step)+".png") #test
+                # Email.sendMail(file_path+"/"+formatted_datetime+"/screenshot"+str(step)+".png") #test
                 count = 0
                 for row_Table in results_table.find_elements(By.CSS_SELECTOR, 'tr'):
                     count +=1 #unnecesary but meh!
@@ -155,14 +161,14 @@ def job():
                         try:
                             if int(cells_Table.text) > 0:
                                 logging.warning("%s -> avisa ctm -> %s", date_text, cells_Table.text)
-                                Email.sendMail(formatted_datetime+"/screenshot"+str(step)+".png")
+                                Email.sendMail(file_path+"/"+formatted_datetime+"/screenshot"+str(step)+".png")
 
                         except Exception as e:
                             logging.error('Error: %s', e)
                             #maybe is not an int?
                             logging.warning("Something strange happened, value: %s, check and send email", cells_Table.text)
                             logging.warning("%s -> avisa ctm -> %s", date_text, cells_Table.text)
-                            Email.sendMail(formatted_datetime+"/screenshot"+str(step)+".png")
+                            Email.sendMail(file_path+"/"+formatted_datetime+"/screenshot"+str(step)+".png")
 
     # Close the browser
     driver.quit()   
