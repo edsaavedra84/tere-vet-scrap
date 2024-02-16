@@ -12,10 +12,12 @@ import schedule
 import logging
 import os
 
+# ugh global var, whatever xD
+times_ran = 0
 file_path = os.path.dirname(os.path.realpath(__file__))
 logging.basicConfig(filename=file_path+'/bot.log', format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 
-MINUTES_BETWEEN_RETRY = 1
+MINUTES_BETWEEN_RETRY = 15
 
 def pinchaLaX(driver, step, ss_folder):
     try:
@@ -47,6 +49,15 @@ def get_options():
     return options
 
 def job():
+    global times_ran
+
+    #once a day send a warning that we are running over email, (for now every 96 runs = 24hrs)
+    if times_ran % (60 / MINUTES_BETWEEN_RETRY) * 24 == 0:
+        logging.warning("Warn that we are running!")
+        Email.sendMailRunning()      
+
+    times_ran += 1
+
     datetime_object = datetime.now()
     formatted_datetime = datetime_object.strftime("%Y%m%d-%H%M%S")
 
@@ -166,19 +177,14 @@ def job():
     return schedule.CancelJob
 
 def main():
+    global times_ran
+
     logging.warning("Starting bot jobs...")
-    Email.sendMailRunning()     
     job()
-    
-    counter = 0
+
     while 1:
-        if counter % 96 == 0:
-            logging.warning("Warn that we are running!")
-            Email.sendMailRunning()        
-        
         schedule.run_pending()
         time.sleep(1)
-        counter+=1
 
 if __name__ == "__main__":
     main()    
