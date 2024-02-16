@@ -129,7 +129,7 @@ def job():
                 time.sleep(1)
                 WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'grdSectionInfo')))
                 results_table = driver.find_element(By.ID, "grdSectionInfo")
-                Email.sendMail(formatted_datetime+"/screenshot"+str(step)+".png")
+                # Email.sendMail(formatted_datetime+"/screenshot"+str(step)+".png") #test
                 count = 0
                 for row_Table in results_table.find_elements(By.CSS_SELECTOR, 'tr'):
                     count +=1 #unnecesary but meh!
