@@ -91,6 +91,7 @@ def job():
             elementUser = driver.find_element(By.ID, "txtUserID")
             elementUser.send_keys("teresitaarayaa@gmail.com")
             elementPass = driver.find_element(By.ID, "txtPassword")
+            # Temp password for bot... yeah lazy to do keystores / chains
             elementPass.send_keys("yohasakura12")
             element = driver.find_element(By.ID, "ctl12_cmdLogin")
             time.sleep(1)
